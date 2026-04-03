@@ -1,4 +1,4 @@
-from main import app,bcrypt,db
+from main import bcrypt,db
 from flask import render_template, request, redirect, url_for,Blueprint,flash
 from models import User
 from forms import LoginForm,RegisterForm

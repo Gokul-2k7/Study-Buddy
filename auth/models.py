@@ -12,6 +12,7 @@ class User(db.Model,UserMixin):
     password=db.Column(db.String(150), nullable=False)
     email=db.Column(db.String(150), unique=True, nullable=False)
     profile_image=db.Column(db.String(150), nullable=True,default='default.jpg')
+    documents=db.relationship('Document', backref='owner', lazy=True)
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.profile_image}')"
     

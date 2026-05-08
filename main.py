@@ -11,5 +11,5 @@ app.config['SECRET_KEY']='your_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///site.db'
 db=SQLAlchemy(app)
 
-if "__main__" == __name__:   
+if "__main__" == __name__:
     app.run(debug=True,port=5000)

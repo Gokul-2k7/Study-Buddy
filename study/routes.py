@@ -1,3 +1,4 @@
+import os
 import uuid
 import chromadb
 from flask import Flask, render_template, request, redirect, url_for, Blueprint
@@ -6,6 +7,9 @@ from models import Document
 from forms import UploadForm
 from flask_login import login_required, current_user
 import pdfplumber 
+from openai import OpenAI
+
+openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  
 study=Blueprint('study', __name__, url_prefix='/study')
 
 
@@ -45,7 +49,7 @@ def chunk_text(text, max_size=800, overlap=100):
 def upload():
     form=UploadForm()
     if form.validate_on_submit():
-        file=form.documnent.data
+        file=form.document.data
         temp=f"tmp/{uuid.uuid4()}.pdf" # Generate a unique filename
         file.save(temp)
         text=extract_text_from_pdf(temp)
@@ -58,6 +62,44 @@ def upload():
             ids=[f"chunk_{i}" for i in range(len(chunks))],
             metadatas=[{"doc_id": collection_name, "chunk_index": i} for i in range(len(chunks))], 
         )
-    
+        doc=Document(filename=file.filename, user_id=current_user.id,chunk_size=len(chunks),collection_name=collection_name)
+        db.session.add(doc)
+        db.session.commit()
+        return redirect(url_for('study.query', doc_id=doc.id))
     return render_template('upload.html', form=form)
 
+def query_llm(doc,query):
+    client=chromadb.Client()
+    collection=client.get_collection(doc.collection_name)
+    results=collection.query(
+        query_texts=[query],
+        n_results=3,
+    )
+    chunks=results['documents'][0]
+    text="\n\n".join(chunks)
+    prompt = f"""You are a study assistant. Answer the question using only the notes below.
+If the answer is not in the notes, say "I couldn't find that in your notes."
+
+Notes:{text}
+
+Question: {query}"""
+    response = openai_client.chat.completions.create(
+        model="gpt-4o-mini",
+        max_tokens=1000,
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    return response.choices[0].message.content
+
+@study.route('/upload/query/<doc_id>', methods=['GET', 'POST'])
+@login_required
+def query(doc_id):
+    if request.method == 'POST':
+        query=request.form.get('query')
+        doc=Document.query.get_or_404(doc_id)
+        if doc.user_id != current_user.id:
+            return "Unauthorized", 403
+        answer=query_llm(doc,query)
+        return render_template('query.html', doc_id=doc_id, answer=answer, query=query)
+    
+    return render_template('query.html', doc_id=doc_id)

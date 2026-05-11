@@ -28,10 +28,12 @@ def chunk_text(text, max_size=800, overlap=100):
     current=""
     for page in pages:
         if len(page) > max_size:
+            if current:
+                chunks.append(current.strip())
+                current=""
             for i in range(0, len(page), max_size - overlap):
                 chunk=page[i:i+max_size]
                 chunks.append(chunk.strip())
-                continue
         else:
             if(len(current)+len(page)+1) <= max_size:
                 current+=page
@@ -53,6 +55,7 @@ def upload():
         temp=f"tmp/{uuid.uuid4()}.pdf" # Generate a unique filename
         file.save(temp)
         text=extract_text_from_pdf(temp)
+        os.remove(temp)
         chunks=chunk_text(text)
         client=chromadb.Client()
         collection_name = f"user_{current_user.id}_doc_{uuid.uuid4().hex[:8]}"
@@ -91,7 +94,7 @@ Question: {query}"""
 
     return response.choices[0].message.content
 
-@study.route('/upload/query/<doc_id>', methods=['GET', 'POST'])
+@study.route('/upload/query/<int:doc_id>', methods=['GET', 'POST'])
 @login_required
 def query(doc_id):
     if request.method == 'POST':

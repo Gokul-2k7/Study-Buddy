@@ -1,5 +1,5 @@
-from main import db
-from main import login_manager
+from web_app.init import db
+from web_app.init import login_manager
 from flask_login import UserMixin
 
 @login_manager.user_loader

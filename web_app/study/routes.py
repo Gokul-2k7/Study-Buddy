@@ -2,14 +2,14 @@ import os
 import uuid
 import chromadb
 from flask import Flask, render_template, request, redirect, url_for, Blueprint
-from main import db,bcrypt
-from models import Document
-from forms import UploadForm
+from web_app.init import db,bcrypt
+from .models import Document
+from .forms import UploadForm
 from flask_login import login_required, current_user
 import pdfplumber 
 from openai import OpenAI
 
-openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  
+openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))  
 study=Blueprint('study', __name__, url_prefix='/study')
 
 

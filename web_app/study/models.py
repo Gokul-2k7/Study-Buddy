@@ -1,5 +1,5 @@
-from main import db
-from auth.models import User
+from web_app.init import db
+from web_app.auth.models import User
 
 class Document(db.Model):
     id=db.Column(db.Integer, primary_key=True)

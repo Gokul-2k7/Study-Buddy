@@ -1,8 +1,8 @@
 from wtforms import Form, StringField, PasswordField, ValidationError, validators,SubmitField
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from main import db,bcrypt
-from models import User
+from web_app.init import db,bcrypt
+from .models import User
 class LoginForm(FlaskForm):
     username = StringField('Username', [validators.DataRequired()])
     password = PasswordField('Password', [validators.DataRequired()])
@@ -21,7 +21,7 @@ class RegisterForm(FlaskForm):
     username = StringField('Username', [validators.DataRequired()])
     email = StringField('Email', [validators.DataRequired(), validators.Email()])
     password = PasswordField('Password', [validators.DataRequired()])
-    confirm = PasswordField('Confirm Password', [validators.DataRequired(), validators.EqualTo('password', message='Passwords must match')])
+    confirm_password = PasswordField('Confirm Password', [validators.DataRequired(), validators.EqualTo('password', message='Passwords must match')])
     profile_image = FileField('Profile Image', [FileAllowed(['jpg', 'png'], 'Images only!')],default='default.jpg')
     submit=SubmitField('Submit')
     

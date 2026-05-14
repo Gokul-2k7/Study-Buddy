@@ -1,7 +1,7 @@
-from main import bcrypt,db
+from web_app.init import bcrypt,db
 from flask import render_template, request, redirect, url_for,Blueprint,flash
-from models import User
-from forms import LoginForm,RegisterForm
+from .models import User
+from .forms import LoginForm,RegisterForm
 from flask_login import login_required, login_user, logout_user
 
 auth=Blueprint('auth', __name__, url_prefix='/auth')
